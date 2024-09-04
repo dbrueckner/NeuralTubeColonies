@@ -6,7 +6,6 @@ import os
 
 import fns_binning_demo as fns_binning
 
-N_bins_phi = 8
 N_bins_r = 30
 
 mode_plot_wedges = True
@@ -49,10 +48,7 @@ for tpoint in timepoints:
     plt.rcParams.update(params)
     plt.rcParams['pcolor.shading'] = 'nearest' #needed for pcolor to avoid errors
 
-    cmap = mpl.cm.get_cmap('turbo')
-    colors_phi = cmap(list(np.linspace(0,1,N_bins_phi)))
-
-    profiles_all = np.zeros((N_stacks,N_bins_r,N_bins_phi,N_marker))
+    profiles_all = np.zeros((N_stacks,N_bins_r,N_marker))
     
     plt.figure()
     for it in range(0,N_stacks_plot):
@@ -80,19 +76,13 @@ for tpoint in timepoints:
                 
                 center = fns_binning.calc_center(x,y,field)
 
-            bins_r,bins_phi,intensity_radius = fns_binning.calc_profile_pizza(x,y,field,center,N_bins_r,N_bins_phi)
-            delta_phi = (bins_phi[1]-bins_phi[0])/2
+            bins_r,intensity_radius = fns_binning.calc_profile(x,y,field,center,N_bins_r)
 
-            profiles_all[it,:,:,it_marker] = intensity_radius
+            profiles_all[it,:,it_marker] = intensity_radius
 
             if it < N_stacks_plot:
                 ax=plt.subplot(H,W,it+it_marker*N_stacks_plot+1)
                 plt.imshow(np.rot90(field,k=1), extent=[x_min,x_max,x_min,x_max], cmap='binary',vmin=0,vmax=max_val)
-                
-                if mode_plot_wedges:
-                    for b_phi in range(0,N_bins_phi):                        
-                        wedge=mpl.patches.Wedge((center[0],center[1]), radius_plot_wedges,(bins_phi[b_phi]-delta_phi)*(180/np.pi),(bins_phi[b_phi]+delta_phi)*(180/np.pi)-3,fc='none',ec=colors_phi[b_phi])     
-                        ax.add_patch(wedge)
                 
                 plt.plot(center[0],center[1],'x',color='k')
                 
@@ -100,8 +90,8 @@ for tpoint in timepoints:
                 plt.yticks([])
 
                 plt.subplot(H,W,it+(it_marker+N_marker)*N_stacks_plot+1)
-                for b_phi in range(0,N_bins_phi):
-                    plt.plot(bins_r,intensity_radius[:,b_phi],color=colors_phi[b_phi])
+
+                plt.plot(bins_r,intensity_radius)
 
                 plt.yticks([])
                 plt.xlabel(r'radius ($\mu$m)')
